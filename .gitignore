@@ -2,3 +2,6 @@
 BaseSystem.img
 BaseSystem.dmg
 BaseSystem.chunklist
+template.xml
+vol.qcow2
+firmware/OVMF_VARS-1024x768.fd
