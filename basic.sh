@@ -3,26 +3,35 @@
 OSK="ourhardworkbythesewordsguardedpleasedontsteal(c)AppleComputerInc"
 VMDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 OVMF=$VMDIR/firmware
-#export QEMU_AUDIO_DRV=pa
-#QEMU_AUDIO_DRV=pa
+export QEMU_AUDIO_DRV=pa
+QEMU_AUDIO_DRV=pa
 BIND_PID1="8086 9d2f"
 BIND_BDF1="0000:00:14.0"
 BIND_PID2="8086 9d31"
 BIND_BDF2="0000:00:14.2"
-if [ "$EUID" -ne 0 ]; then
+
+echo $VMDIR
+if [ "$EUID" != 0 ]; then
     echo "Please run as root"
     exit
 fi
 
-modprobe vfio-pci
-echo "$BIND_PID1" > /sys/bus/pci/drivers/vfio-pci/new_id
-echo "$BIND_BDF1" > /sys/bus/pci/devices/$BIND_BDF1/driver/unbind
-echo "$BIND_BDF1" > /sys/bus/pci/drivers/vfio-pci/bind
-echo "$BIND_PID1" > /sys/bus/pci/drivers/vfio-pci/remove_id
-echo "$BIND_PID2" > /sys/bus/pci/drivers/vfio-pci/new_id
-echo "$BIND_BDF2" > /sys/bus/pci/devices/$BIND_BDF2/driver/unbind
-echo "$BIND_BDF2" > /sys/bus/pci/drivers/vfio-pci/bind
-echo "$BIND_PID2" > /sys/bus/pci/drivers/vfio-pci/remove_id
+if [[ $1 == vfio ]]; then
+    modprobe vfio-pci
+    echo "$BIND_PID1" > /sys/bus/pci/drivers/vfio-pci/new_id
+    echo "$BIND_BDF1" > /sys/bus/pci/devices/$BIND_BDF1/driver/unbind
+    echo "$BIND_BDF1" > /sys/bus/pci/drivers/vfio-pci/bind
+    echo "$BIND_PID1" > /sys/bus/pci/drivers/vfio-pci/remove_id
+    echo "$BIND_PID2" > /sys/bus/pci/drivers/vfio-pci/new_id
+    echo "$BIND_BDF2" > /sys/bus/pci/devices/$BIND_BDF2/driver/unbind
+    echo "$BIND_BDF2" > /sys/bus/pci/drivers/vfio-pci/bind
+    echo "$BIND_PID2" > /sys/bus/pci/drivers/vfio-pci/remove_id
+    vfio="-device pcie-root-port,bus=pcie.0,multifunction=on,port=1,chassis=1,id=port.1 -device vfio-pci,host=00:14.0,bus=port.1"
+fi
+
+if [[ ! -e $VMDIR/firmware/OVMF_VARS-1024x768.fd ]]; then
+    curl -L https://github.com/foxlet/macOS-Simple-KVM/raw/master/firmware/OVMF_VARS-1024x768.fd -o firmware/OVMF_VARS-1024x768.fd
+fi
 
 qemu-system-x86_64 \
     -enable-kvm \
@@ -46,11 +55,10 @@ qemu-system-x86_64 \
     -device ide-hd,bus=sata.3,drive=InstallMedia \
     -drive id=SystemDisk,if=none,file=$VMDIR/vol.qcow2 \
     -device ide-hd,bus=sata.4,drive=SystemDisk \
-    -device pcie-root-port,bus=pcie.0,multifunction=on,port=1,chassis=1,id=port.1 \
-    -device vfio-pci,host=00:14.0,bus=port.1 \
-    -display sdl -full-screen \
-    2>/dev/null
+    $vfio
 
-echo "$BIND_BDF1" > /sys/bus/pci/drivers/vfio-pci/unbind
-echo "$BIND_BDF1" > /sys/bus/pci/drivers/xhci_hcd/bind
-echo "$BIND_BDF2" > /sys/bus/pci/drivers/vfio-pci/unbind
+if [[ $1 == vfio ]]; then
+    echo "$BIND_BDF1" > /sys/bus/pci/drivers/vfio-pci/unbind
+    echo "$BIND_BDF1" > /sys/bus/pci/drivers/xhci_hcd/bind
+    echo "$BIND_BDF2" > /sys/bus/pci/drivers/vfio-pci/unbind
+fi
