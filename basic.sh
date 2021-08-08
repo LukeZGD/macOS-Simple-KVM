@@ -31,6 +31,8 @@ if [[ $1 == "vfio" ]]; then
 elif [[ $1 == "install" ]]; then
     extra="-drive id=InstallMedia,format=raw,if=none,file=$VMDIR/BaseSystem.img \
            -device ide-hd,bus=sata.3,drive=InstallMedia"
+elif [[ $1 == "custom" ]]; then
+    extra="$2"
 fi
 
 if [[ ! -e $VMDIR/firmware/OVMF_VARS-1024x768.fd ]]; then
