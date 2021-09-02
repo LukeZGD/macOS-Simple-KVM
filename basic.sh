@@ -26,9 +26,9 @@ if [[ $1 == "vfio" ]]; then
     echo "$BIND_BDF2" > /sys/bus/pci/devices/$BIND_BDF2/driver/unbind
     echo "$BIND_BDF2" > /sys/bus/pci/drivers/vfio-pci/bind
     echo "$BIND_PID2" > /sys/bus/pci/drivers/vfio-pci/remove_id
-    extra="-device pcie-root-port,bus=pcie.0,multifunction=on,port=1,chassis=1,id=port.1 \
-           -device vfio-pci,host=00:14.0,bus=port.1"
+    extra="-device vfio-pci,host=00:14.0"
 elif [[ $1 == "install" ]]; then
+    [[ ! -e vol.qcow2 ]] && qemu-img create -f qcow2 vol.qcow2 64G
     extra="-drive id=InstallMedia,format=raw,if=none,file=$VMDIR/BaseSystem.img \
            -device ide-hd,bus=sata.3,drive=InstallMedia"
 elif [[ $1 == "custom" ]]; then
