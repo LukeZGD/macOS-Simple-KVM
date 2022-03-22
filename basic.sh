@@ -5,10 +5,6 @@ VMDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 OVMF=$VMDIR/firmware
 #export QEMU_AUDIO_DRV=pa
 #QEMU_AUDIO_DRV=pa
-BIND_PID1="8086 9d2f"
-BIND_BDF1="0000:00:14.0"
-BIND_PID2="8086 9d31"
-BIND_BDF2="0000:00:14.2"
 
 echo $VMDIR
 if [[ "$EUID" != 0 && $1 == "vfio" ]]; then
@@ -18,15 +14,27 @@ fi
 
 if [[ $1 == "vfio" ]]; then
     modprobe vfio-pci
+    if [[ $2 == '2' ]]; then
+        host="00:14.0"
+        BIND_PDF1="8086 8c31"
+    else
+        host="00:14.0"
+        BIND_PID1="8086 9d2f"
+        BIND_PID2="8086 9d31"
+        BIND_BDF2="0000:00:14.2"
+    fi
+    BIND_BDF1="0000:$host"
     echo "$BIND_PID1" > /sys/bus/pci/drivers/vfio-pci/new_id
     echo "$BIND_BDF1" > /sys/bus/pci/devices/$BIND_BDF1/driver/unbind
     echo "$BIND_BDF1" > /sys/bus/pci/drivers/vfio-pci/bind
     echo "$BIND_PID1" > /sys/bus/pci/drivers/vfio-pci/remove_id
-    echo "$BIND_PID2" > /sys/bus/pci/drivers/vfio-pci/new_id
-    echo "$BIND_BDF2" > /sys/bus/pci/devices/$BIND_BDF2/driver/unbind
-    echo "$BIND_BDF2" > /sys/bus/pci/drivers/vfio-pci/bind
-    echo "$BIND_PID2" > /sys/bus/pci/drivers/vfio-pci/remove_id
-    extra="-device vfio-pci,host=00:14.0"
+    if [[ -n $BIND_BDF2 && -n $BIND_PID2 ]]; then
+        echo "$BIND_PID2" > /sys/bus/pci/drivers/vfio-pci/new_id
+        echo "$BIND_BDF2" > /sys/bus/pci/devices/$BIND_BDF2/driver/unbind
+        echo "$BIND_BDF2" > /sys/bus/pci/drivers/vfio-pci/bind
+        echo "$BIND_PID2" > /sys/bus/pci/drivers/vfio-pci/remove_id
+    fi
+    extra="-device vfio-pci,host=$host"
 elif [[ $1 == "install" ]]; then
     [[ ! -e vol.qcow2 ]] && qemu-img create -f qcow2 vol.qcow2 64G
     extra="-drive id=InstallMedia,format=raw,if=none,file=$VMDIR/BaseSystem.img \
@@ -64,5 +72,5 @@ qemu-system-x86_64 \
 if [[ $1 == "vfio" ]]; then
     echo "$BIND_BDF1" > /sys/bus/pci/drivers/vfio-pci/unbind
     echo "$BIND_BDF1" > /sys/bus/pci/drivers/xhci_hcd/bind
-    echo "$BIND_BDF2" > /sys/bus/pci/drivers/vfio-pci/unbind
+    [[ -n $BIND_BDF2 ]] && echo "$BIND_BDF2" > /sys/bus/pci/drivers/vfio-pci/unbind
 fi
