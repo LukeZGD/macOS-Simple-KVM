@@ -16,7 +16,7 @@ if [[ $1 == "vfio" ]]; then
     modprobe vfio-pci
     if [[ $2 == '2' ]]; then
         host="00:14.0"
-        BIND_PDF1="8086 8c31"
+        BIND_PID1="8086 8c31"
     else
         host="00:14.0"
         BIND_PID1="8086 9d2f"
