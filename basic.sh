@@ -17,6 +17,9 @@ if [[ $1 == "vfio" ]]; then
     if [[ $2 == '2' ]]; then
         host="00:14.0"
         BIND_PID1="8086 8c31"
+    elif [[ $2 == '3' ]]; then
+        host="03:00.3"
+        BIND_PID1="1022 1639"
     else
         host="00:14.0"
         BIND_PID1="8086 9d2f"
@@ -55,12 +58,12 @@ qemu-system-x86_64 \
     -cpu Penryn,vendor=GenuineIntel,kvm=on,+sse3,+sse4.2,+aes,+xsave,+avx,+xsaveopt,+xsavec,+xgetbv1,+avx2,+bmi2,+smep,+bmi1,+fma,+movbe,+invtsc \
     -device isa-applesmc,osk="$OSK" \
     -smbios type=2 \
-    -drive if=pflash,format=raw,readonly,file="$OVMF/OVMF_CODE.fd" \
+    -drive if=pflash,format=raw,readonly=on,file="$OVMF/OVMF_CODE.fd" \
     -drive if=pflash,format=raw,file="$OVMF/OVMF_VARS-1024x768.fd" \
     -vga qxl \
     -device ich9-intel-hda -device hda-output \
     -usb -device usb-kbd -device usb-mouse \
-    -netdev user,id=net0 \
+    -netdev user,id=net0,hostfwd=tcp::5555-:22 \
     -device e1000-82545em,netdev=net0,id=net0,mac=52:54:00:c9:18:27 \
     -device ich9-ahci,id=sata \
     -drive id=ESP,if=none,format=qcow2,file=$VMDIR/OpenCore-nopicker.qcow2 \
