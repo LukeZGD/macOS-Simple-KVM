@@ -63,7 +63,7 @@ qemu-system-x86_64 \
     -vga qxl \
     -device ich9-intel-hda -device hda-output \
     -usb -device usb-kbd -device usb-mouse \
-    -netdev user,id=net0,hostfwd=tcp::5555-:22 \
+    -netdev user,id=net0,hostfwd=tcp::5555-:22,hostfwd=tcp::5900-:5900 \
     -device e1000-82545em,netdev=net0,id=net0,mac=52:54:00:c9:18:27 \
     -device ich9-ahci,id=sata \
     -drive id=ESP,if=none,format=qcow2,file=$VMDIR/OpenCore-nopicker.qcow2 \
