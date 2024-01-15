@@ -18,8 +18,8 @@ if [[ $1 == "vfio" ]]; then
         host="00:14.0"
         BIND_PID1="8086 8c31"
     elif [[ $2 == '3' ]]; then
-        host="03:00.3"
-        BIND_PID1="1022 1639"
+        host="00:14.0"
+        BIND_PID1="8086 51ed"
     else
         host="00:14.0"
         BIND_PID1="8086 9d2f"
@@ -71,6 +71,7 @@ qemu-system-x86_64 \
     -drive if=pflash,format=raw,readonly=on,file="$OVMF/OVMF_CODE.fd" \
     -drive if=pflash,format=raw,file="$OVMF/OVMF_VARS-1024x768.fd" \
     -vga qxl \
+    -global qxl-vga.vram_size_mb=128 -global qxl-vga.ram_size_mb=128 \
     -device ich9-intel-hda -device hda-output \
     -usb -device usb-kbd -device usb-mouse \
     -netdev user,id=net0,hostfwd=tcp::5555-:22,hostfwd=tcp::5900-:5900 \
