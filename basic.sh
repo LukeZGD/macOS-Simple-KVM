@@ -18,6 +18,9 @@ if [[ $1 == "vfio" ]]; then
         host="00:14.0"
         BIND_PID1="8086 8c31"
     elif [[ $2 == '3' ]]; then
+        host="03:00.3"
+        BIND_PID1="1022 1639"
+    elif [[ $2 == '4' ]]; then
         host="00:14.0"
         BIND_PID1="8086 51ed"
     else
@@ -62,7 +65,7 @@ fi
 
 qemu-system-x86_64 \
     -enable-kvm \
-    -m 2G \
+    -m 4G \
     -machine q35,accel=kvm \
     -smp 4,cores=2 \
     -cpu Penryn,vendor=GenuineIntel,kvm=on,+sse3,+sse4.2,+aes,+xsave,+avx,+xsaveopt,+xsavec,+xgetbv1,+avx2,+bmi2,+smep,+bmi1,+fma,+movbe,+invtsc \
